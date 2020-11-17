@@ -225,7 +225,20 @@ public class BSTree extends Tree {
     }
 
     public boolean sanity() {
-
+        BSTree node = this;
+        node.getRootSentinel();
+        if (node.parent != null || node.size != -1 || node.key != -1 || node.address != -1) {
+            return false;
+        }
+        node = node.getNext();
+        while (node != null) {
+            if (node.parent.left != node && node.parent.right == node)
+                return false;
+            if (node.left.parent != node || node.right.parent != node)
+                return false;
+            node = node.parent;
+            // successor
+        }
         return true;
     }
 
