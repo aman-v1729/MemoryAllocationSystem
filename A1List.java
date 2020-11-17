@@ -22,8 +22,15 @@ public class A1List extends List {
 
     public A1List Insert(int address, int size, int key) {
         A1List node = new A1List(address, size, key);
-        node.next = this.next;
-        node.prev = this;
+        A1List curr = this;
+        /*
+         * while (curr.prev != null) { curr = curr.prev; } node.prev = curr; node.next =
+         * curr.next; node.prev.next = node; node.next.prev = node;
+         */
+        if (curr.next == null) // In case on tail.
+            curr = curr.prev;
+        node.next = curr.next;
+        node.prev = curr;
         node.next.prev = node;
         node.prev.next = node;
         return node;
@@ -69,68 +76,47 @@ public class A1List extends List {
     }
 
     public A1List Find(int k, boolean exact) {
-        if (exact) {
-            A1List node = this;
-
-            if (node.key == k && node.prev != null && node.next != null) {
-                return node;
-            }
-
-            A1List prevNode = node;
-            while (prevNode.prev != null) {
-                if (prevNode.key == k) {
-                    return prevNode;
-                } else {
-                    prevNode = prevNode.prev;
-                }
-            }
-
-            A1List nextNode = this;
-            while (nextNode.next != null) {
-                if (nextNode.key == k) {
-                    return nextNode;
-                } else {
-                    nextNode = nextNode.next;
-                }
-            }
-            return null;
-        } else {
-            A1List node = this;
-
-            if (node.key >= k) {
-                return node;
-            }
-
-            A1List prevNode = this;
-            while (prevNode.prev != null) {
-                if (prevNode.key >= k) {
-                    return prevNode;
-                } else {
-                    prevNode = prevNode.prev;
-                }
-            }
-
-            A1List nextNode = this;
-            while (nextNode.next != null) {
-                if (nextNode.key >= k) {
-                    return nextNode;
-                } else {
-                    nextNode = nextNode.next;
-                }
-            }
-            return null;
+        A1List node = this;
+        while (node.prev != null) {
+            node = node.prev;
         }
+        node = node.next;
+        while (node.next != null) {
+            if ((node.key >= k && !exact) || (node.key == k && exact))
+                return node;
+            else
+                node = node.next;
+        }
+        return null;
+        /*
+         * if (exact) { A1List node = this;
+         * 
+         * if (node.key == k && node.prev != null && node.next != null) { return node; }
+         * 
+         * A1List prevNode = node; while (prevNode.prev != null) { if (prevNode.key ==
+         * k) { return prevNode; } else { prevNode = prevNode.prev; } }
+         * 
+         * A1List nextNode = this; while (nextNode.next != null) { if (nextNode.key ==
+         * k) { return nextNode; } else { nextNode = nextNode.next; } } return null; }
+         * else { A1List node = this;
+         * 
+         * if (node.key >= k) { return node; }
+         * 
+         * A1List prevNode = this; while (prevNode.prev != null) { if (prevNode.key >=
+         * k) { return prevNode; } else { prevNode = prevNode.prev; } }
+         * 
+         * A1List nextNode = this; while (nextNode.next != null) { if (nextNode.key >=
+         * k) { return nextNode; } else { nextNode = nextNode.next; } } return null; }
+         */
     }
 
     public A1List getFirst() {
         A1List node = this;
-        if (node.prev == null)
-            node = node.next;
-
-        while (node.prev.prev != null)
+        while (node.prev != null)
             node = node.prev;
+        node = node.next;
         if (node.next == null)
-            return node.prev;
+            return null;
         return node;
     }
 
@@ -144,6 +130,10 @@ public class A1List extends List {
     public boolean sanity() {
         // Circular checks
         A1List first = this;
+        if (this == null)
+            return false;
+        if (this.next == null && this.prev == null)
+            return false;
 
         A1List second = first.next;
         while (second != null && second.next != null) {
@@ -171,6 +161,9 @@ public class A1List extends List {
         if (node.key != -1 || node.size != -1 || node.address != -1)
             return false;
         if (node.next.prev != node)
+            return false;
+
+        if (node.next == null)
             return false;
         node = node.next;
 
