@@ -156,8 +156,11 @@ public class A1List extends List {
 
         // Check prev, next links
         A1List node = this;
-        while (node.prev != null)
+        while (node.prev != null) {
+            if (node.prev.next != node)
+                return false;
             node = node.prev;
+        }
         if (node.key != -1 || node.size != -1 || node.address != -1)
             return false;
         if (node.next.prev != node)
@@ -181,6 +184,7 @@ public class A1List extends List {
             return false;
         if (node.key != -1 || node.size != -1 || node.address != -1)
             return false;
+
         return true;
     }
 
