@@ -40,10 +40,14 @@ public class A1List extends List {
         A1List node = this;
         if (node.key == d.key && node.address == d.address && node.size == d.size && node.next != null
                 && node.prev != null) {
+            A1List nextNode = node.next;
             node.key = node.next.key;
             node.address = node.next.address;
             node.size = node.next.size;
             node.next = node.next.next;
+            node.next.prev = node;
+            nextNode.prev = null;
+            nextNode.next = null;
             return true;
         }
 
@@ -53,7 +57,8 @@ public class A1List extends List {
             if (prevNode.key == d.key && prevNode.address == d.address && prevNode.size == d.size) {
                 prevNode.prev.next = prevNode.next;
                 prevNode.next.prev = prevNode.prev;
-                prevNode = null;
+                prevNode.next = null;
+                prevNode.prev = null;
                 return true;
             } else {
                 prevNode = prevNode.prev;
@@ -66,7 +71,8 @@ public class A1List extends List {
             if (nextNode.key == d.key && nextNode.address == d.address && nextNode.size == d.size) {
                 nextNode.prev.next = nextNode.next;
                 nextNode.next.prev = nextNode.prev;
-                nextNode = null;
+                nextNode.next = null;
+                nextNode.prev = null;
                 return true;
             } else {
                 nextNode = nextNode.next;
