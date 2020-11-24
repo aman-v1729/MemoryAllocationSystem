@@ -2,7 +2,6 @@
 // Implement the following functions according to the specifications provided in Tree.java
 
 public class BSTree extends Tree {
-
     private BSTree left, right; // Children.
     private BSTree parent; // Parent pointer.
 
@@ -30,7 +29,7 @@ public class BSTree extends Tree {
         BSTree node = this.getRootSentinel();
         // Now insert
         while (node != null) {
-            if (node.parent == null || node.key <= key) {
+            if (node.parent == null || node.key < key || (node.key == key && node.address <= address)) {
                 if (node.right == null) {
                     node.right = new BSTree(address, size, key);
                     node.right.parent = node;
@@ -53,63 +52,15 @@ public class BSTree extends Tree {
 
     public boolean Delete(Dictionary e) {
         BSTree node = this;
-        // Check if node to be deleted is this.
-        // If node which calls method is to be deleted, replace reference with sentinel.
-        if (node.key == e.key && node.address == e.address && node.size == e.size && node.parent != null) {
-            BSTree root = node.getRootSentinel();
-            if (root.right == node) {
-                root.right = node.right;
-                root.left = node.left;
-                if (root.right != null)
-                    root.right.parent = root;
-                if (root.left != null)
-                    root.left.parent = root;
-                root.parent = node;
-                root.key = node.key;
-                root.address = node.address;
-                root.size = node.size;
+        BSTree root = node.getRootSentinel();
 
-                node.address = -1;
-                node.size = -1;
-                node.key = -1;
-                node.parent = null;
-                node.right = root;
-                node.left = null;
-            } else {
-                BSTree rootRight = root.right;
-                root.left = node.left;
-                root.right = node.right;
-                if (root.left != null)
-                    root.left.parent = root;
-                if (root.right != null)
-                    root.right.parent = root;
-                root.key = node.key;
-                root.address = node.address;
-                root.size = node.size;
-                root.parent = node.parent;
-                if (node.isLeftChild())
-                    node.parent.left = root;
-                else
-                    node.parent.right = root;
-                node.size = -1;
-                node.address = -1;
-                node.key = -1;
-                node.left = null;
-                node.right = rootRight;
-                node.parent = null;
-                rootRight.parent = node;
-            }
-        }
-
-        // Go to root
-        node = node.getRootSentinel();
-        if (node.right == null)
+        if (root.right == null)
             return false;
-        node = node.right;
+        node = root.right;
 
         // Start finding the node to be deleted
         while (node != null) {
-            if (node.key <= e.key) {
+            if (node.key < e.key || (node.key == e.key && node.address <= e.address)) {
                 if (node.key == e.key) {
                     if (node.address == e.address && node.size == e.size) {
                         // Node found. Delete.
@@ -129,10 +80,8 @@ public class BSTree extends Tree {
                         if (node.left == null && node.right == null) {
                             if (nodeIsLeftChild) {
                                 node.parent.left = null;
-                                node = null;
                             } else {
                                 node.parent.right = null;
-                                node = null;
                             }
                         } else if (node.left == null) {
                             if (nodeIsLeftChild) {
@@ -151,6 +100,19 @@ public class BSTree extends Tree {
                                 node.left.parent = node.parent;
                             }
                         }
+                        node.address = -1;
+                        node.size = -1;
+                        node.key = -1;
+                        node.parent = null;
+                        node.left = null;
+                        node.right = null;
+
+                        if (node == this) {
+                            node.right = root.right;
+                            root.right = null;
+                            if (node.right != null)
+                                node.right.parent = node;
+                        }
                         return true;
                     }
                 }
@@ -167,20 +129,23 @@ public class BSTree extends Tree {
 
     public BSTree Find(int key, boolean exact) {
         BSTree node = this.getRootSentinel();
+        if (node.right == null)
+            return null;
         node = node.right;
-
+        BSTree bestNode = null;
         while (node != null) {
-            if (node.key > key && exact) {
+            if (node.key == key) {
+                bestNode = node;
                 node = node.left;
-            } else if (node.key > key && !exact) {
-                return node;
             } else if (node.key < key) {
                 node = node.right;
-            } else {
-                return node;
+            } else if (node.key > key) {
+                if (!exact)
+                    bestNode = node;
+                node = node.left;
             }
         }
-        return null;
+        return bestNode;
     }
 
     public BSTree getFirst() {
@@ -224,21 +189,84 @@ public class BSTree extends Tree {
         return null;
     }
 
-    public boolean sanity() {
-        BSTree node = this;
-        node.getRootSentinel();
-        if (node.parent != null || node.size != -1 || node.key != -1 || node.address != -1) {
+    private boolean checkPointers(BSTree node) {
+        if (node.parent == null)
+            return false;
+
+        if (node.parent.left != node && node.parent.right != node)
+            return false;
+
+        if (node.right == null && node.left == null)
+            return true;
+
+        if (node.left == node.right)
+            return false;
+
+        if (node.left != null) {
+            if (node.left.parent != node)
+                return false;
+            if (!checkPointers(node.left))
+                return false;
+        }
+
+        if (node.right != null) {
+            if (node.right.parent != node)
+                return false;
+            if (!checkPointers(node.right))
+                return false;
+        }
+
+        return true;
+    }
+
+    private boolean checkBSTProperty(BSTree node, int minkey, int minaddress, int maxkey, int maxaddress) {
+        if (node == null)
+            return true;
+        if (node.key > maxkey || node.key < minkey)
+            return false;
+        if (node.key == maxkey && node.address >= maxaddress) {
             return false;
         }
-        node = node.getNext();
-        while (node != null) {
-            if (node.parent.left != node && node.parent.right == node)
-                return false;
-            if (node.left.parent != node || node.right.parent != node)
-                return false;
-            node = node.parent;
-            // successor
+        if (node.key == minkey && node.address <= minaddress) {
+            return false;
         }
+        if (!checkBSTProperty(node.left, minkey, minaddress, node.key, node.address))
+            return false;
+        if (!checkBSTProperty(node.right, node.key, node.address, maxkey, maxaddress))
+            return false;
+        return true;
+    }
+
+    public boolean sanity() {
+        BSTree node = this;
+        if (node.parent != null) {
+            BSTree first = this;
+            BSTree second = this.parent;
+            while (second != null && second.parent != null) {
+                if (first == second)
+                    return false;
+                first = first.parent;
+                second = second.parent.parent;
+            }
+        }
+        while (node.parent != null) {
+            if (node.parent.left != node && node.parent.right != node) {
+                return false;
+            }
+            node = node.parent;
+        }
+        BSTree root = node;
+        if (root.left != null || root.parent != null || root.size != -1 || root.key != -1 || root.address != -1) {
+            return false;
+        }
+        if (root.right == null)
+            return true;
+
+        node = root.right;
+        if (!checkPointers(node))
+            return false;
+        if (!checkBSTProperty(node, Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE))
+            return false;
         return true;
     }
 
