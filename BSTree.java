@@ -173,6 +173,8 @@ public class BSTree extends Tree {
 
     public BSTree getNext() {
         BSTree node = this;
+        // if (node.parent == null)
+        // return null;
         if (node.right != null) {
             node = node.right;
             while (node.left != null) {

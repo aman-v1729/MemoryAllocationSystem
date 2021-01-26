@@ -28,33 +28,6 @@ public class AVLTree extends BSTree {
     // nothing needs to be done for those.
     // Remove the functions, to not override the inherited functions.
 
-    public void print2DUtil(AVLTree root, int space) {
-        // Base case
-        if (root == null)
-            return;
-
-        // Increase distance between levels
-        space += 5;
-
-        // Process right child first
-        print2DUtil(root.right, space);
-
-        // Print current node after space
-        // count
-        System.out.print("\n");
-        for (int i = 5; i < space; i++)
-            System.out.print(" ");
-        System.out.print("(" + root.address + "," + root.size + "," + root.key + ", " + root.height + ")" + "\n");
-
-        // Process left child
-        print2DUtil(root.left, space);
-    }
-
-    public void print2D() {
-        // Pass initial space count as 0
-        print2DUtil(this.getRootSentinel(), 0);
-    }
-
     public AVLTree Insert(int address, int size, int key) {
         AVLTree node = this.getRootSentinel();
         while (node != null) {
@@ -198,6 +171,8 @@ public class AVLTree extends BSTree {
 
     public AVLTree getNext() {
         AVLTree node = this;
+        // if (node.parent == null)
+        // return null;
         if (node.right != null) {
             node = node.right;
             while (node.left != null) {
@@ -305,9 +280,7 @@ public class AVLTree extends BSTree {
             return false;
         if ((height(node) != height(node.left) + 1) && (height(node) != height(node.right) + 1))
             return false;
-        if (!checkHeightProperty(node.left) || !checkHeightProperty(node.right))
-            return false;
-        return true;
+        return (checkHeightProperty(node.left) && checkHeightProperty(node.right));
     }
 
     private int height(AVLTree node) {
@@ -349,7 +322,7 @@ public class AVLTree extends BSTree {
 
     private AVLTree reBalance(AVLTree node) {
         if (height(node.left) - height(node.right) > 1) {
-            if (height(node.left.left) > height(node.left.right)) {
+            if (height(node.left.left) >= height(node.left.right)) {
                 node = rightRotate(node);
             } else {
                 node = leftRightRotate(node);
@@ -403,12 +376,12 @@ public class AVLTree extends BSTree {
     }
 
     private AVLTree rightLeftRotate(AVLTree node) {
-        node.right = rightRotate(node.right);
+        rightRotate(node.right);
         return (leftRotate(node));
     }
 
     private AVLTree leftRightRotate(AVLTree node) {
-        node.left = leftRotate(node.left);
+        leftRotate(node.left);
         return (rightRotate(node));
     }
 
